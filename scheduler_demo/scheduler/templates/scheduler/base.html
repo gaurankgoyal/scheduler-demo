@@ -1,0 +1,74 @@
+{% load static %}
+<html>
+<head>
+     <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="{% static 'scheduler/main.css' %}">
+
+    {% if title %}
+        <title>AWS Scheduler</title>
+    {% else %}
+        <title>AWS Scheduler</title>
+    {% endif %}
+</head>
+<body>
+    <header class="site-header">
+      <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
+        <div class="container">
+            <a class="navbar-brand p-0 me-2" href="/" aria-label="Bootstrap">
+                <img src="./png/nagarro.png" alt="" width="50" height="40">
+            </a>
+          <a class="name-brand mr-4 name-color" href="{% url 'scheduler-home' %}">Demo Scheduler</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarToggle">
+            <div class="navbar-nav me-auto">
+              <a class="nav-item nav-link" href="{% url 'scheduler-home' %}">Home</a>
+              <a class="nav-item nav-link" href="{% url 'scheduler-about' %}">About</a>
+                <a class="nav-item nav-link" href="{% url 'add-account' %}">Add Account</a>
+            </div>
+            <!-- Navbar Right Side -->
+            <div class="navbar-nav">
+              <a class="nav-item nav-link" href="#">Login</a>
+              <a class="nav-item nav-link" href="#">Register</a>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <main role="main" class="container">
+      <div class="row">
+          <div class="col-md-8">
+            {% block content %}{% endblock %}
+          </div>
+          <div class="col-md-4">
+              <div class="content-section">
+                <h3>Select An Account</h3>
+                <p class='text-muted'>Please select an AWS account for which you need to schedule the resource.
+                </p>
+                  <div class="dropdown">
+                  <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                    Select AWS Account
+                  </button>
+                  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                    <li><a class="dropdown-item" href="#">Dev Account/123456789</a></li>
+                    <li><a class="dropdown-item" href="#">QA Account/123456789</a></li>
+                    <li><a class="dropdown-item" href="#">PRD Account/123456789</a></li>
+                  </ul>
+                </div>
+              </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+
+</body>
+</html>
