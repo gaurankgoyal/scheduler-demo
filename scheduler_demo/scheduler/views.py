@@ -6,7 +6,8 @@ from django.contrib import messages
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from .utils import get_ec2_instance, start_instance, stop_instance
+from .utils import get_ec2_instance, start_instance, stop_instance, get_rds_instance, stop_rds_instance, start_rds_instance
+from botocore.exceptions import ClientError
 
 
 def index(request):
@@ -23,14 +24,21 @@ def home(request):
 
 @login_required
 def select_account(request, account_number):
-    print(account_number)
     aws = AWS.objects.all().filter(account_number=account_number, owner=request.user).first()
-    ec2_list = get_ec2_instance(aws.region, aws.aws_access_key, aws.aws_secret_key)
+    try:
+        ec2_list = get_ec2_instance(aws.region, aws.aws_access_key, aws.aws_secret_key)
+        rds_list = get_rds_instance(aws.region, aws.aws_access_key, aws.aws_secret_key)
+    except ClientError as e:
+        messages.warning(request, str(e))
+        context = {
+            'accounts': AWS.objects.all().filter(owner=request.user),
+        }
+        return render(request, 'scheduler/account_details.html', context)
     context = {
         'accounts': AWS.objects.all().filter(owner=request.user),
         'ec2_details': ec2_list,
         'aws_account': AWS.objects.all().filter(account_number=account_number, owner=request.user),
-
+        'rds_details': rds_list
     }
     return render(request, 'scheduler/account_details.html', context)
 
@@ -48,6 +56,28 @@ def stop_ec2(request, account_number, instance_id):
     aws = AWS.objects.all().filter(account_number=account_number, owner=request.user).first()
     stop_instance(aws.region, aws.aws_access_key, aws.aws_secret_key, instance_id)
     messages.success(request, f'Instance-{instance_id} in Account-{account_number} has been Stopped !')
+    return redirect('account-details', account_number)
+
+
+@login_required
+def start_rds(request, account_number, rds_identifier):
+    aws = AWS.objects.all().filter(account_number=account_number, owner=request.user).first()
+    message = start_rds_instance(aws.region, aws.aws_access_key, aws.aws_secret_key, rds_identifier)
+    if "successfully" in message:
+        messages.success(request, message)
+    else:
+        messages.warning(request, message)
+    return redirect('account-details', account_number)
+
+
+@login_required
+def stop_rds(request, account_number, rds_identifier):
+    aws = AWS.objects.all().filter(account_number=account_number, owner=request.user).first()
+    message = stop_rds_instance(aws.region, aws.aws_access_key, aws.aws_secret_key, rds_identifier)
+    if "successfully" in message:
+        messages.success(request, message)
+    else:
+        messages.warning(request, message)
     return redirect('account-details', account_number)
 
 
