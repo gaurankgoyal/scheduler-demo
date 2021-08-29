@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from .utils import get_ec2_instance, start_instance, stop_instance
 
 
 def index(request):
@@ -18,6 +19,36 @@ def home(request):
         'accounts': AWS.objects.filter(owner=request.user)
     }
     return render(request, 'scheduler/home.html', context)
+
+
+@login_required
+def select_account(request, account_number):
+    print(account_number)
+    aws = AWS.objects.all().filter(account_number=account_number, owner=request.user).first()
+    ec2_list = get_ec2_instance(aws.region, aws.aws_access_key, aws.aws_secret_key)
+    context = {
+        'accounts': AWS.objects.all().filter(owner=request.user),
+        'ec2_details': ec2_list,
+        'aws_account': AWS.objects.all().filter(account_number=account_number, owner=request.user),
+
+    }
+    return render(request, 'scheduler/account_details.html', context)
+
+
+@login_required
+def start_ec2(request, account_number, instance_id):
+    aws = AWS.objects.all().filter(account_number=account_number, owner=request.user).first()
+    start_instance(aws.region, aws.aws_access_key, aws.aws_secret_key, instance_id)
+    messages.success(request, f'Instance-{instance_id} in Account-{account_number} has been started !')
+    return redirect('account-details', account_number)
+
+
+@login_required
+def stop_ec2(request, account_number, instance_id):
+    aws = AWS.objects.all().filter(account_number=account_number, owner=request.user).first()
+    stop_instance(aws.region, aws.aws_access_key, aws.aws_secret_key, instance_id)
+    messages.success(request, f'Instance-{instance_id} in Account-{account_number} has been Stopped !')
+    return redirect('account-details', account_number)
 
 
 def about(request):
