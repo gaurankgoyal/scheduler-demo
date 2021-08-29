@@ -8,10 +8,24 @@
                 <legend class="border-bottom mb-4">
                     <h4 class="font-weight-bold text-center text-primary">Update AWS Account Details</h4>
                 </legend>
-                {{ form|crispy }}
+                <div class="mb-3">
+                    {{ form.name|as_crispy_field}}
+                </div>
+                <div class="mb-3">
+                    {{ form.account_number|as_crispy_field}}
+                </div>
+                <div class="mb-3">
+                    {{ form.region|as_crispy_field}}
+                </div>
+                <div class="mb-3">
+                    {{ form.aws_access_key|as_crispy_field}}
+                </div>
+                <div class="mb-3">
+                    {{ form.aws_secret_key|as_crispy_field}}
+                </div>
             </fieldset>
             <div class="form-group">
-                <button class="btn btn-outline-info" type="submit">
+                <button class="btn btn-primary" type="submit">
                     Update Account
                 </button>
             </div>

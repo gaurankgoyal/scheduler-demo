@@ -22,12 +22,33 @@
               <td>{{ account.account_number }}</td>
               <td>{{ account.aws_access_key }}</td>
                  {{ object.id }}
-              <td><a type="button" class="btn btn-outline-success" href="{% url 'update-account' account.id %}">Update</a>
-                  <a type="button" class="btn btn-outline-danger" href="{% url 'delete-account' account.id %}">Remove</a>
+              <td><a type="button" class="btn btn-success" href="{% url 'update-account' account.id %}">Update</a>
+                  <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirm{{ forloop.counter }}">Remove</button>
               </td>
              </tr>
+        <div class="modal fade" id="confirm{{ forloop.counter }}" tabindex="-1" aria-labelledby="confirm{{ forloop.counter }}Label" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="confirm{{ forloop.counter }}Label">Please confirm</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                Are you sure you want to remove AWS account {{ account.account_number }}?
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a type="button" class="btn btn-danger" href="{% url 'delete-account' account.id %}">Remove Account</a>
+              </div>
+            </div>
+          </div>
+        </div>
         {% endfor %}
         </tbody>
     </table>
 </article>
+
+<!-- Modal -->
+
+
 {% endblock content %}

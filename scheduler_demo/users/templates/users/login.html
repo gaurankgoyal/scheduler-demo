@@ -6,12 +6,17 @@
             {% csrf_token %}
             <fieldset class="form-group">
                 <legend class="border-bottom mb-4">
-                    Log In
+                    <h4 class="font-weight-bold">Log In</h4>
                 </legend>
-                {{ form|crispy }}
+                  <div class="mb-3">
+                    {{ form.username|as_crispy_field}}
+                  </div>
+                  <div class="mb-3">
+                    {{ form.password|as_crispy_field }}
+                  </div>
             </fieldset>
             <div class="form-group">
-                <button class="btn btn-outline-info" type="submit">
+                <button class="btn btn-primary" type="submit">
                     Login
                 </button>
             </div>

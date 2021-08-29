@@ -3,7 +3,7 @@ from django.forms import ModelForm
 from .models import AWS
 
 
-AWS_REGION= [
+AWS_REGION = [
     ("us-east-2", "US East (Ohio)"),
     ("us-east-1", "US East (N. Virginia)"),
     ("us-west-1", "US West (N. California)"),
@@ -42,7 +42,7 @@ class AccountRegisterForm(ModelForm):
         required=True,
     )
 
-    region = forms.TypedChoiceField(
+    region = forms.ChoiceField(
         label="AWS Region",
         required=True,
         widget=forms.Select,

@@ -5,6 +5,7 @@ from .forms import AccountRegisterForm
 from django.contrib import messages
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.messages.views import SuccessMessageMixin
 
 
 def index(request):
@@ -13,11 +14,17 @@ def index(request):
 
 @login_required
 def home(request):
-    return render(request, 'scheduler/home.html')
+    context = {
+        'accounts': AWS.objects.filter(owner=request.user)
+    }
+    return render(request, 'scheduler/home.html', context)
 
 
 def about(request):
-    return render(request, 'scheduler/about.html')
+    context = {
+        'accounts': AWS.objects.filter(owner=request.user)
+    }
+    return render(request, 'scheduler/about.html', context)
 
 
 @login_required
@@ -41,20 +48,22 @@ class AccountListView(LoginRequiredMixin, ListView):
         return AWS.objects.filter(owner=self.request.user)
 
 
-class AccountCreateView(LoginRequiredMixin, CreateView):
+class AccountCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = AWS
     template_name = 'scheduler/add-account.html'
     fields = ['name', 'account_number', 'region', 'aws_access_key', 'aws_secret_key']
+    success_message = "AWS Account was Successfully Added!!"
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
         return super().form_valid(form)
 
 
-class AccountUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class AccountUpdateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageMixin, UpdateView):
     model = AWS
     template_name = 'scheduler/aws_update.html'
     fields = ['name', 'account_number', 'region', 'aws_access_key', 'aws_secret_key']
+    success_message = "AWS Account was Successfully Updated!!"
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
@@ -67,13 +76,16 @@ class AccountUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return False
 
 
-class AccountDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+class AccountDeleteView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageMixin, DeleteView):
     model = AWS
     success_url = '/accounts'
-    messages = 'Account Has Been Deleted'
+    success_message = "AWS Account was Removed!!"
 
     def test_func(self):
         aws = self.get_object()
         if self.request.user == aws.owner:
             return True
         return False
+
+    def get(self, request, *args, **kwargs):
+        return self.post(request, *args, **kwargs)

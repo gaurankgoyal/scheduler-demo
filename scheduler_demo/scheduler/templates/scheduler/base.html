@@ -60,6 +60,7 @@
             {% endif %}
             {% block content %}{% endblock %}
           </div>
+          {% if user.is_authenticated %}
           <div class="col-md-4">
               <div class="content-section">
                 <div class="article-metadata">
@@ -72,13 +73,14 @@
                     Select AWS Account
                   </button>
                   <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li><a class="dropdown-item" href="#">Dev Account/123456789</a></li>
-                    <li><a class="dropdown-item" href="#">QA Account/123456789</a></li>
-                    <li><a class="dropdown-item" href="#">PRD Account/123456789</a></li>
+                      {% for account in accounts %}
+                    <li><a class="dropdown-item" href="#">{{ account.name }}/{{ account.account_number }}</a></li>
+                        {% endfor %}
                   </ul>
                 </div>
               </div>
         </div>
+          {% endif %}
       </div>
     </main>
 
