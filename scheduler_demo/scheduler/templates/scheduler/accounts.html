@@ -1,0 +1,33 @@
+{% extends "scheduler/base.html" %}
+{% block content %}
+    <article class="media content-section">
+        <div class="article-metadata">
+           <h4 class="font-weight-bold text-center text-primary">List Of AWS Accounts</h4>
+        </div>
+    <table class="table">
+        <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Account Name</th>
+          <th scope="col">Account Number</th>
+          <th scope="col">Access Key</th>
+          <th scope="col">Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for account in accounts %}
+             <tr>
+              <th scope="row">{{ forloop.counter }}</th>
+              <td>{{ account.name }}</td>
+              <td>{{ account.account_number }}</td>
+              <td>{{ account.aws_access_key }}</td>
+                 {{ object.id }}
+              <td><a type="button" class="btn btn-outline-success" href="{% url 'update-account' account.id %}">Update</a>
+                  <a type="button" class="btn btn-outline-danger" href="{% url 'delete-account' account.id %}">Remove</a>
+              </td>
+             </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</article>
+{% endblock content %}

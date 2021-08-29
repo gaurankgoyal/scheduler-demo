@@ -1,19 +1,18 @@
 {% extends "scheduler/base.html" %}
 {% load crispy_forms_tags %}
-{% crispy account_register_form %}
 {% block content %}
     <div class="content-section">
         <form method="POST">
             {% csrf_token %}
             <fieldset class="form-group">
                 <legend class="border-bottom mb-4">
-                    <h4 class="font-weight-bold text-center text-primary">Add AWS Account</h4>
+                    <h4 class="font-weight-bold text-center text-primary">Update AWS Account Details</h4>
                 </legend>
                 {{ form|crispy }}
             </fieldset>
             <div class="form-group">
                 <button class="btn btn-outline-info" type="submit">
-                    Add Account
+                    Update Account
                 </button>
             </div>
         </form>

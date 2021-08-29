@@ -20,7 +20,7 @@
       <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
         <div class="container">
             <a class="navbar-brand p-0 me-2" href="/" aria-label="Bootstrap">
-                <img src="./png/nagarro.png" alt="" width="50" height="40">
+                <img src="/png/nagarro.png" alt="" width="50" height="40">
             </a>
           <a class="name-brand mr-4 name-color" href="{% url 'scheduler-home' %}">Demo Scheduler</a>
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,13 +29,20 @@
           <div class="collapse navbar-collapse" id="navbarToggle">
             <div class="navbar-nav me-auto">
               <a class="nav-item nav-link" href="{% url 'scheduler-home' %}">Home</a>
-              <a class="nav-item nav-link" href="{% url 'scheduler-about' %}">About</a>
-                <a class="nav-item nav-link" href="{% url 'add-account' %}">Add Account</a>
+                {% if user.is_authenticated %}
+                    <a class="nav-item nav-link" href="{% url 'add-account' %}">Add Account</a>
+                    <a class="nav-item nav-link" href="{% url 'accounts' %}">Accounts</a>
+                {% endif %}
+                <a class="nav-item nav-link" href="{% url 'scheduler-about' %}">About</a>
             </div>
             <!-- Navbar Right Side -->
             <div class="navbar-nav">
-              <a class="nav-item nav-link" href="#">Login</a>
-              <a class="nav-item nav-link" href="#">Register</a>
+                {% if user.is_authenticated %}
+                    <a class="nav-item nav-link" href="{% url 'logout' %}">Logout</a>
+                {% else %}
+                  <a class="nav-item nav-link" href="{% url 'login' %}">Login</a>
+                  <a class="nav-item nav-link" href="{% url 'register' %}">Register</a>
+                {% endif %}
             </div>
           </div>
         </div>
@@ -44,15 +51,24 @@
     <main role="main" class="container">
       <div class="row">
           <div class="col-md-8">
+            {% if messages %}
+              {% for message in messages %}
+              <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+              </div>
+              {% endfor %}
+            {% endif %}
             {% block content %}{% endblock %}
           </div>
           <div class="col-md-4">
               <div class="content-section">
-                <h3>Select An Account</h3>
-                <p class='text-muted'>Please select an AWS account for which you need to schedule the resource.
+                <div class="article-metadata">
+               <h4 class="font-weight-bold text-center text-primary">Select An Account</h4>
+            </div>
+                <p class='text-muted ms-2'>Please select an AWS account for which you need to schedule the resource.
                 </p>
                   <div class="dropdown">
-                  <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                  <button class="btn btn-primary dropdown-toggle ms-2" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
                     Select AWS Account
                   </button>
                   <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
