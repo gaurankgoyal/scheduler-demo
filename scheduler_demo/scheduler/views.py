@@ -91,6 +91,7 @@ def stop_rds(request, account_number, rds_identifier):
     return redirect('account-details', account_number)
 
 
+@login_required
 def about(request):
     context = {
         'accounts': AWS.objects.filter(owner=request.user)
