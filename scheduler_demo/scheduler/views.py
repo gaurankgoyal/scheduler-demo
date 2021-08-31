@@ -170,7 +170,6 @@ def scheduler(request, account_number, instance_id):
 @login_required
 def delete_schedule(request, aws_name_start, account_number):
     aws = AWS.objects.all().filter(account_number=account_number, owner=request.user).first()
-    print(aws)
     if aws_delete_schedule(aws.region,
                            aws.aws_access_key,
                            aws.aws_secret_key,

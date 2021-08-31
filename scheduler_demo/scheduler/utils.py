@@ -208,7 +208,6 @@ def create_stop_cron_job(region, aws_access_key, aws_secret_key, instance_id, st
 
 
 def aws_delete_schedule(region, aws_access_key, aws_secret_key, aws_start_cron):
-    print("inside delete")
     my_config = Config(
         region_name=region,
     )
