@@ -6,7 +6,7 @@
             {% csrf_token %}
             <fieldset class="form-group">
                 <legend class="border-bottom mb-4">
-                    <h4 class="font-weight-bold text-center">Configure Scheduler for i-123441143 in AWS Account-12345678912</h4>
+                    <h4 class="font-weight-bold">Configure Scheduler for {{ instance_id }} in Account-{{ account.account_number }}</h4>
                 </legend>
                  <input type="hidden" id="instance_id" name="instance_id" value={{ instance_id }}>
                 <input type="hidden" id="account" name="account" value={{ account.id }}>
@@ -23,9 +23,17 @@
                 </div>
             </fieldset>
             <div class="form-group">
+                {% if update %}
+                <button class="btn btn-primary" type="submit">
+                    Update Scheduler
+                </button>
+                <a href="/cronjob/{{ account.account_number }}/{{ instance_id }}_{{ request.user }}_start/delete" class="btn btn-danger ms-2"> Remove Scheduler </a>
+                {% else %}
                 <button class="btn btn-primary" type="submit">
                     Configure Scheduler
                 </button>
+                {% endif %}
+
             </div>
         </form>
     </div>

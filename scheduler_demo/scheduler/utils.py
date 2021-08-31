@@ -1,9 +1,10 @@
 import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
+from .models import AWS, CronJob
 
 
-def get_ec2_instance(region, aws_access_key, aws_secret_key):
+def get_ec2_instance(region, aws_access_key, aws_secret_key, aws):
     my_config = Config(
         region_name=region,
     )
@@ -19,13 +20,22 @@ def get_ec2_instance(region, aws_access_key, aws_secret_key):
         return e
     ec2_list = []
     for instance in ec2['Reservations']:
+        if CronJob.objects.all().filter(account=aws, instance_id=instance['Instances'][0]['InstanceId']).exists():
+            cronjob = CronJob.objects.all().filter(account=aws, instance_id=instance['Instances'][0]['InstanceId']).first()
+            start_cron = cronjob.start_cronjob
+            stop_cron = cronjob.stop_cronjob
+        else:
+            start_cron = 'NA'
+            stop_cron = 'NA'
         if instance['Instances'][0]['State']['Name'] == 'terminated':
             pass
         else:
             ec2_dict = {
                 'instance_id': instance['Instances'][0]['InstanceId'],
                 'instance_state': instance['Instances'][0]['State']['Name'],
-                'instance_ip': instance['Instances'][0]['PrivateIpAddress']
+                'instance_ip': instance['Instances'][0]['PrivateIpAddress'],
+                'start_cron': start_cron,
+                'stop_cron': stop_cron
             }
             ec2_list.append(ec2_dict)
     return ec2_list
@@ -65,7 +75,7 @@ def stop_instance(region, aws_access_key, aws_secret_key, instance_id):
     return True
 
 
-def get_rds_instance(region, aws_access_key, aws_secret_key):
+def get_rds_instance(region, aws_access_key, aws_secret_key, aws):
     my_config = Config(
         region_name=region,
     )
@@ -195,3 +205,26 @@ def create_stop_cron_job(region, aws_access_key, aws_secret_key, instance_id, st
         print(e)
         return str(e)
     return "Cron Job has been configured for instance - {}".format(instance_id)
+
+
+def aws_delete_schedule(region, aws_access_key, aws_secret_key, aws_start_cron):
+    print("inside delete")
+    my_config = Config(
+        region_name=region,
+    )
+    client = boto3.client(
+        'events',
+        aws_access_key_id=aws_access_key,
+        aws_secret_access_key=aws_secret_key,
+        config=my_config,
+    )
+
+    try:
+        client.remove_targets(Rule=aws_start_cron, Ids=[aws_start_cron])
+        client.delete_rule(Name=aws_start_cron)
+        client.remove_targets(Rule=aws_start_cron.replace("start", "stop"), Ids=[aws_start_cron.replace("start", "stop")])
+        client.delete_rule(Name=aws_start_cron.replace("start", "stop"))
+        return True
+    except ClientError as e:
+        print(e)
+        return str(e)

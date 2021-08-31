@@ -16,4 +16,5 @@ urlpatterns = [
     path('account/<int:pk>/delete/', AccountDeleteView.as_view(), name='delete-account'),
     path('accounts/', AccountListView.as_view(), name='accounts'),
     path('cronjob/<str:account_number>/<str:instance_id>/add', views.scheduler, name='cronjob'),
+    path('cronjob/<str:account_number>/<str:aws_name_start>/delete', views.delete_schedule, name='delete-cronjob'),
 ]

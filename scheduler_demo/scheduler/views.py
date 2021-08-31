@@ -13,7 +13,8 @@ from .utils import (get_ec2_instance,
                     stop_rds_instance,
                     start_rds_instance,
                     create_start_cron_job,
-                    create_stop_cron_job)
+                    create_stop_cron_job,
+                    aws_delete_schedule)
 from botocore.exceptions import ClientError
 
 
@@ -33,9 +34,8 @@ def home(request):
 def select_account(request, account_number):
     aws = AWS.objects.all().filter(account_number=account_number, owner=request.user).first()
     try:
-        ec2_list = get_ec2_instance(aws.region, aws.aws_access_key, aws.aws_secret_key)
-        rds_list = get_rds_instance(aws.region, aws.aws_access_key, aws.aws_secret_key)
-        #cronjob = CronJob.objects.all().filter(account=aws)
+        ec2_list = get_ec2_instance(aws.region, aws.aws_access_key, aws.aws_secret_key, aws)
+        rds_list = get_rds_instance(aws.region, aws.aws_access_key, aws.aws_secret_key, aws)
     except ClientError as e:
         messages.warning(request, str(e))
         context = {
@@ -119,6 +119,7 @@ def add_account(request):
 def scheduler(request, account_number, instance_id):
     aws = AWS.objects.all().filter(account_number=account_number, owner=request.user).first()
     cronjob = CronJob.objects.all().filter(instance_id=instance_id).first()
+    update = True
     if request.method == "POST":
         form = SchedulerCreationForm(request.POST)
         if form.is_valid():
@@ -149,15 +150,37 @@ def scheduler(request, account_number, instance_id):
             )
             messages.success(request, message)
             return redirect('account-details', account_number)
-    form = SchedulerCreationForm(initial={'name': cronjob.name,
-                                          'start_cronjob': cronjob.start_cronjob,
-                                          'stop_cronjob': cronjob.stop_cronjob})
+    if CronJob.objects.all().filter(instance_id=instance_id).exists():
+        form = SchedulerCreationForm(initial={'name': cronjob.name,
+                                              'start_cronjob': cronjob.start_cronjob,
+                                              'stop_cronjob': cronjob.stop_cronjob})
+    else:
+        form = SchedulerCreationForm()
+        update = False
     context = {
         'form': form,
         'instance_id': instance_id,
-        'account': aws
+        'account': aws,
+        'accounts': AWS.objects.filter(owner=request.user),
+        'update': update
     }
     return render(request, 'scheduler/scheduler.html', context)
+
+
+@login_required
+def delete_schedule(request, aws_name_start, account_number):
+    aws = AWS.objects.all().filter(account_number=account_number, owner=request.user).first()
+    print(aws)
+    if aws_delete_schedule(aws.region,
+                           aws.aws_access_key,
+                           aws.aws_secret_key,
+                           aws_name_start):
+        CronJob.objects.all().filter(aws_name_start=aws_name_start).delete()
+        messages.info(request, "Cron Schedule was removed")
+
+    else:
+        messages.warning(request, "Error while deleting the schedule")
+    return redirect('account-details', account_number)
 
 
 class AccountListView(LoginRequiredMixin, ListView):
