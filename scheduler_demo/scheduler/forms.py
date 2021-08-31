@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from .models import AWS
+from .models import AWS, CronJob
 
 
 AWS_REGION = [
@@ -33,7 +33,7 @@ AWS_REGION = [
 class AccountRegisterForm(ModelForm):
     name = forms.CharField(
         label="Name",
-        max_length=80,
+        max_length=30,
         required=True,
     )
 
@@ -63,3 +63,44 @@ class AccountRegisterForm(ModelForm):
         model = AWS
         fields = ['name', 'account_number', 'region', 'aws_access_key', 'aws_secret_key']
 
+
+class SchedulerCreationForm(ModelForm):
+    name = forms.CharField(
+        label="Scheduler Name",
+        max_length=30,
+        required=True,
+        help_text="Name of the Scheduler config"
+    )
+
+    start_cronjob = forms.CharField(
+        label="Start Cron Expression",
+        max_length=30,
+        required=True,
+        help_text="AWS Event Rule Cron Expression example - 'cron(0 20 * * ? *)'",
+    )
+
+    stop_cronjob = forms.CharField(
+        label="Stop Cron Expression",
+        max_length=30,
+        required=True,
+        help_text="AWS Event Rule Cron Expression example - 'cron(0 20 * * ? *)'",
+    )
+
+    instance_id = forms.CharField(
+        max_length=80,
+        help_text="Instance Id"
+    )
+
+    aws_name_start = forms.CharField(
+        max_length=80,
+        help_text="aws name start"
+    )
+
+    aws_name_stop = forms.CharField(
+        max_length=80,
+        help_text="aws name stop"
+    )
+
+    class Meta:
+        model = CronJob
+        fields = ['name', 'start_cronjob', 'stop_cronjob', 'account', 'aws_name_start', 'aws_name_stop']

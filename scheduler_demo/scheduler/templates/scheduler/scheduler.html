@@ -1,0 +1,32 @@
+{% extends "scheduler/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="content-section">
+        <form method="POST">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">
+                    <h4 class="font-weight-bold text-center">Configure Scheduler for i-123441143 in AWS Account-12345678912</h4>
+                </legend>
+                 <input type="hidden" id="instance_id" name="instance_id" value={{ instance_id }}>
+                <input type="hidden" id="account" name="account" value={{ account.id }}>
+                <input type="hidden" id="aws_name_start" name="aws_name_start" value="{{ instance_id }}_{{ request.user }}_start">
+                <input type="hidden" id="aws_name_stop" name="aws_name_stop" value="{{ instance_id }}_{{ request.user }}_stop">
+                <div class="mb-3">
+                    {{ form.name|as_crispy_field}}
+                </div>
+                <div class="mb-3">
+                    {{ form.start_cronjob|as_crispy_field}}
+                </div>
+                <div class="mb-3">
+                    {{ form.stop_cronjob|as_crispy_field}}
+                </div>
+            </fieldset>
+            <div class="form-group">
+                <button class="btn btn-primary" type="submit">
+                    Configure Scheduler
+                </button>
+            </div>
+        </form>
+    </div>
+{% endblock content %}

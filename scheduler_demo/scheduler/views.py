@@ -1,12 +1,19 @@
 from django.shortcuts import render, redirect
-from .models import AWS
+from .models import AWS, CronJob
 from django.contrib.auth.decorators import login_required
-from .forms import AccountRegisterForm
+from .forms import AccountRegisterForm, SchedulerCreationForm
 from django.contrib import messages
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from .utils import get_ec2_instance, start_instance, stop_instance, get_rds_instance, stop_rds_instance, start_rds_instance
+from .utils import (get_ec2_instance,
+                    start_instance,
+                    stop_instance,
+                    get_rds_instance,
+                    stop_rds_instance,
+                    start_rds_instance,
+                    create_start_cron_job,
+                    create_stop_cron_job)
 from botocore.exceptions import ClientError
 
 
@@ -28,6 +35,7 @@ def select_account(request, account_number):
     try:
         ec2_list = get_ec2_instance(aws.region, aws.aws_access_key, aws.aws_secret_key)
         rds_list = get_rds_instance(aws.region, aws.aws_access_key, aws.aws_secret_key)
+        #cronjob = CronJob.objects.all().filter(account=aws)
     except ClientError as e:
         messages.warning(request, str(e))
         context = {
@@ -99,7 +107,56 @@ def add_account(request):
             messages.success(request, f'Account Has Been Added')
             return redirect('scheduler-home')
     form = AccountRegisterForm()
-    return render(request, 'scheduler/add-account.html', {'form': form})
+    context = {
+        'accounts': AWS.objects.filter(owner=request.user),
+        'form': form
+    }
+    return render(request, 'scheduler/add-account.html', context)
+
+
+@login_required
+def scheduler(request, account_number, instance_id):
+    aws = AWS.objects.all().filter(account_number=account_number, owner=request.user).first()
+    cronjob = CronJob.objects.all().filter(instance_id=instance_id).first()
+    if request.method == "POST":
+        form = SchedulerCreationForm(request.POST)
+        if form.is_valid():
+            create_start_cron_job(
+                aws.region,
+                aws.aws_access_key,
+                aws.aws_secret_key,
+                instance_id,
+                form.cleaned_data['start_cronjob'],
+                str(request.user))
+            message = create_stop_cron_job(
+                aws.region,
+                aws.aws_access_key,
+                aws.aws_secret_key,
+                instance_id,
+                form.cleaned_data['stop_cronjob'],
+                str(request.user))
+            CronJob.objects.update_or_create(
+                aws_name_start=form.cleaned_data['aws_name_start'],
+                aws_name_stop=form.cleaned_data['aws_name_stop'],
+                instance_id=form.cleaned_data['instance_id'],
+                defaults={
+                    "name": form.cleaned_data['name'],
+                    "account": form.cleaned_data['account'],
+                    "start_cronjob": form.cleaned_data['start_cronjob'],
+                    "stop_cronjob": form.cleaned_data['stop_cronjob']
+                }
+            )
+            messages.success(request, message)
+            return redirect('account-details', account_number)
+    form = SchedulerCreationForm(initial={'name': cronjob.name,
+                                          'start_cronjob': cronjob.start_cronjob,
+                                          'stop_cronjob': cronjob.stop_cronjob})
+    context = {
+        'form': form,
+        'instance_id': instance_id,
+        'account': aws
+    }
+    return render(request, 'scheduler/scheduler.html', context)
 
 
 class AccountListView(LoginRequiredMixin, ListView):

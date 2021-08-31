@@ -19,7 +19,6 @@ def get_ec2_instance(region, aws_access_key, aws_secret_key):
         return e
     ec2_list = []
     for instance in ec2['Reservations']:
-        print(instance['Instances'][0]['State']['Name'])
         if instance['Instances'][0]['State']['Name'] == 'terminated':
             pass
         else:
@@ -124,3 +123,75 @@ def start_rds_instance(region, aws_access_key, aws_secret_key, rds_identifier):
     except ClientError as e:
         return str(e)
     return "Request to Start RDS-{} has been trigger successfully".format(rds_identifier)
+
+
+def create_start_cron_job(region, aws_access_key, aws_secret_key, instance_id, start_cron, user):
+    my_config = Config(
+        region_name=region,
+    )
+    client = boto3.client(
+        'events',
+        aws_access_key_id=aws_access_key,
+        aws_secret_access_key=aws_secret_key,
+        config=my_config,
+    )
+    cron_name = instance_id + "_" + user + "_start"
+    input_string = '{"instance_id": "' + instance_id+'","action":"start"}'
+    try:
+        # Put an event rule
+        response = client.put_rule(
+            Name=cron_name,
+            ScheduleExpression=start_cron,
+            State='ENABLED'
+        )
+        response = client.put_targets(
+            Rule=cron_name,
+            Targets=[
+                {
+                    'Arn': 'arn:aws:lambda:eu-central-1:408446414824:function:start-stop-lambda',
+                    'Id': cron_name,
+                    'Input': input_string,
+                }
+            ]
+        )
+
+    except ClientError as e:
+        print(e)
+        return str(e)
+    return "Cron Job has been configured for instance - {}".format(instance_id)
+
+
+def create_stop_cron_job(region, aws_access_key, aws_secret_key, instance_id, stop_cron, user):
+    my_config = Config(
+        region_name=region,
+    )
+    client = boto3.client(
+        'events',
+        aws_access_key_id=aws_access_key,
+        aws_secret_access_key=aws_secret_key,
+        config=my_config,
+    )
+    cron_name = instance_id + "_" + user + "_stop"
+    input_string = '{"instance_id": "' + instance_id+'","action":"start"}'
+    try:
+        # Put an event rule
+        response = client.put_rule(
+            Name=cron_name,
+            ScheduleExpression=stop_cron,
+            State='ENABLED'
+        )
+        response = client.put_targets(
+            Rule=cron_name,
+            Targets=[
+                {
+                    'Arn': 'arn:aws:lambda:eu-central-1:408446414824:function:start-stop-lambda',
+                    'Id': cron_name,
+                    'Input': input_string,
+                }
+            ]
+        )
+
+    except ClientError as e:
+        print(e)
+        return str(e)
+    return "Cron Job has been configured for instance - {}".format(instance_id)

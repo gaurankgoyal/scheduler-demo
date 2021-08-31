@@ -15,4 +15,5 @@ urlpatterns = [
     path('account/<int:pk>/update/', AccountUpdateView.as_view(), name='update-account'),
     path('account/<int:pk>/delete/', AccountDeleteView.as_view(), name='delete-account'),
     path('accounts/', AccountListView.as_view(), name='accounts'),
+    path('cronjob/<str:account_number>/<str:instance_id>/add', views.scheduler, name='cronjob'),
 ]

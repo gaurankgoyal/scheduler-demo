@@ -46,7 +46,9 @@
       <a type="button" class="btn btn-success" href="/aws_account/{{ account.account_number }}/{{ ec2.instance_id }}/start-ec2">Start</a>
       {% endfor %}
         {% endif %}
-      <button type="button" class="btn btn-primary">Schedule</button></td>
+        {% for account in aws_account %}
+      <a type="button" class="btn btn-primary" href="/cronjob/{{ account.account_number }}/{{ ec2.instance_id }}/add">Schedule</a></td>
+      {% endfor %}
     </tr>
   {% endfor %}
 
