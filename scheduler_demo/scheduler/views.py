@@ -43,7 +43,7 @@ def select_account(request, account_number):
         }
         return render(request, 'scheduler/account_details.html', context)
     if len(ec2_list) == 0 and len(rds_list) == 0:
-        messages.warning(request, f'No EC2 Instance or RDS found on AWS Account - {account_number}!')
+        messages.warning(request, f'No EC2 Instance or RDS found on AWS Account - {account_number}')
     context = {
         'accounts': AWS.objects.all().filter(owner=request.user),
         'ec2_details': ec2_list,
