@@ -88,6 +88,13 @@ def get_rds_instance(region, aws_access_key, aws_secret_key, aws):
     rds = client.describe_db_instances()
     rds_list = []
     for dbinstance in rds['DBInstances']:
+        if CronJob.objects.all().filter(account=aws, instance_id=dbinstance['DBInstanceIdentifier']).exists():
+            cronjob = CronJob.objects.all().filter(account=aws, instance_id=dbinstance['DBInstanceIdentifier']).first()
+            start_cron = cronjob.start_cronjob
+            stop_cron = cronjob.stop_cronjob
+        else:
+            start_cron = 'NA'
+            stop_cron = 'NA'
         if 'Endpoint' not in dbinstance:
             rds_endpoint = '-'
         else:
@@ -95,7 +102,9 @@ def get_rds_instance(region, aws_access_key, aws_secret_key, aws):
         rds_dict = {
             'rds_identifier': dbinstance['DBInstanceIdentifier'],
             'rds_state': dbinstance['DBInstanceStatus'],
-            'rds_endpoint': rds_endpoint
+            'rds_endpoint': rds_endpoint,
+            'start_cron': start_cron,
+            'stop_cron': stop_cron
         }
         rds_list.append(rds_dict)
     return rds_list

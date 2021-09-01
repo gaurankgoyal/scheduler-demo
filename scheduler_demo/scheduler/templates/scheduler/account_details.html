@@ -63,11 +63,22 @@
   {% for rds in rds_details %}
     <tr>
       <td>{{ rds.rds_identifier }}</td>
-      <td>{{ rds.rds_endpoint }}</td>
       <td>RDS</td>
-      <td>{{ rds.rds_state }}</td>
+      <td>
+        {% if rds.rds_state == 'available'  %}
+        <p class="p-1 mb-2 bg-success bg-gradient text-white text-center">{{ rds.rds_state }}</p>
+        {% else %}
+        <p class="p-1 mb-2 bg-danger bg-gradient text-white text-center">{{ ec2.instance_state }}</p>
+        {% endif %}
+      </td>
       {% for account in aws_account %}
-      <td>{{ account.account_number }}</td>
+      <td>
+        {% if rds.start_cron == 'NA' %}
+        <p class="p-1 mb-2 bg-secondary bg-gradient text-white text-center">{{ rds.start_cron }}</p>
+        {% else%}
+        <p class="p-1 mb-2 bg-success bg-gradient text-white text-center">Start: {{ rds.start_cron }}</p>
+          <p class="p-1 mb-2 bg-danger bg-gradient text-white text-center">Stop: {{ rds.stop_cron }}</p>
+      {% endif %}</td>
       {% endfor %}
       <td>
         {% if rds.rds_state == 'available' %}
@@ -77,9 +88,12 @@
         {% else%}
         {% for account in aws_account %}
       <a type="button" class="btn btn-success" href="/aws_account/{{ account.account_number }}/{{ rds.rds_identifier }}/start-rds">Start</a>
+
       {% endfor %}
         {% endif %}
-      <button type="button" class="btn btn-primary">Schedule</button></td>
+        {% for account in aws_account %}
+      <a type="button" class="btn btn-primary" href="/cronjob/{{ account.account_number }}/{{ rds.rds_identifier }}/add">Schedule</a></td>
+      {% endfor %}
     </tr>
   {% endfor %}
 
